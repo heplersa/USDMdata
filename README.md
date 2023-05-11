@@ -1,7 +1,7 @@
 # USDMdata
 Discretized US Drought Data to Support Statistical Modeling
 
-The complete data set can be found at [https://github.com/heplersa/USDMdata](https://doi.org/10.5061/dryad.g1jwstqw7)
+The complete data set can be found at https://doi.org/10.5061/dryad.g1jwstqw7
 
 This repository contains R and Matlab scripts that were used to generate a discretized data set on United State drought status with other relevant environmental variables.
 
