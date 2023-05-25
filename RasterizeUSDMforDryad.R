@@ -1,27 +1,24 @@
 ## This is an R script to rasterize the USDM to a gridded support.
 ##
-## 1. Obtain raw data
-#######################
-#######################
-
-
-## 2. Libraries
+## 1. Libraries
 #################################
 library(sf)
-library(raster) ## install version 3.5.29 from source.  
+library(raster) ## install version 3.5.29 from source.
 library(ggplot2)
 library(RColorBrewer)
 library(maps)
 library(fields)
 #################################
 
-
-## 3. Code to load one USDM file, set things up, make adjacency matrix
+## 2. Code to load one USDM file, set things up, make adjacency matrix
 #################################
 usdm=st_read("USDM/USDM_20140729_M/USDM_20140729.shp") ## Chosen due to severity of drought
 head(usdm)
 
-usa <- getData("GADM",country="USA",level=1)
+usa <- maps::map("state", fill=TRUE)
+usa2<-map2SpatialPolygons(usa,
+                          IDs=sapply(strsplit(usa$names, ":"), "[", 1L),
+                          proj4string=CRS("+proj=longlat +datum=WGS84"))
 orng=brewer.pal(6, "Oranges")
 
 ## Rasterize this to just a regular rectangular grid
@@ -38,8 +35,21 @@ quilt.plot(expand.grid(lon, lat),c(raster_data[]), nx=120, ny=50, xlab="Longitud
 map("state",lwd=1,add=T)
 
 ## Need to intersect raster with outer shape of US
-us.grid=rasterize(usa,rst_template)
+us.grid=rasterize(usa2,rst_template)
 us.grid=(us.grid>0)-2 ## Make a 0-map for valid locations
+
+name1=c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
+        "AA","BB","CC","DD","EE","FF","GG","HH","II","JJ","KK","LL","MM","NN","OO","PP","QQ","RR","SS","TT","UU","VV","WW","XX")
+name2=seq(1,120,by=1)
+
+## We need to redact S2, S105, EE97, KK88, and RR85 because these locations are over oceans
+## but the shapefile usa2 doesn't redact them.
+us.grid[which(name1=="S"),which(name2==2)] <- NA
+us.grid[which(name1=="S"),which(name2==105)] <- NA
+us.grid[which(name1=="EE"),which(name2==97)] <- NA
+us.grid[which(name1=="KK"),which(name2==88)] <- NA
+us.grid[which(name1=="RR"),which(name2==85)] <- NA
+
 plot(us.grid) ## Should be -1 if in the contiguous US
 
 ## Can restrict plot using mask function
@@ -47,7 +57,7 @@ usdmr <- mask(crop(raster_data, us.grid), us.grid)
 plot(usdmr, col=orng)
 map("state",lwd=1,add=T)
 
-## Differentiate between NA (outside contiguous US) and level 0.
+## Differentiate between NA (outside US) and level 0.
 dm=usdmr
 for (i in 1:50){
   print(i)
@@ -70,17 +80,6 @@ coord=expand.grid(lon, lat)
 coord.use=coord[wh,]
 
 plot(coord.use, cex=0.2, pch=16)
-
-#us.grid.test=us.grid[]
-#us.grid.test[1]=1 ## bottom left
-#us.grid.test[120]=1 ## bottom right
-#us.grid.test[121]=1
-#try=matrix(us.grid.test[],nrow=120,ncol=50)
-#image(try) ## Yeah it's upside down, just seeing if this box contained the continental US
-
-name1=c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
-        "AA","BB","CC","DD","EE","FF","GG","HH","II","JJ","KK","LL","MM","NN","OO","PP","QQ","RR","SS","TT","UU","VV","WW","XX")
-name2=seq(1,120,by=1)
 
 name3a=expand.grid(name2,name1)
 name3=data.frame(name3a[,2],name3a[,1])
@@ -106,6 +105,8 @@ for (i in 1:dim(dz)[1]){
 
 rownames(A)=labels
 colnames(A)=labels
+
+write.csv(A, "A.csv")
 ############################
 
 
@@ -132,7 +133,7 @@ for (q in 1:length(filenames)){
   ##   usdm=dplyr::select(usdm, "DM")
   raster_data <- rasterize(usdm, rst_template)
   usdmr <- mask(crop(raster_data, us.grid), us.grid)
-  
+
   dm[[q]]=usdmr
   dm[[q]][(is.na(us.grid[])=="FALSE") & (is.na(usdmr[])=="TRUE")]=0
   for (i in 1:50){
@@ -172,7 +173,7 @@ colnames(data)=c("time","grid","lon","lat","drought")
 table(data$drought)
 save.image(file="USDMRasterized.rda")
 
-write.csv(data, file="usdm.csv")
+write.csv(data, file="usdmfinal.csv")
 ##########################################
 
 
