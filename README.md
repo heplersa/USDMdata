@@ -10,7 +10,7 @@ RasterizeUSDMforDryad.R is a R script that imports shapefiles of drought from ht
 
 TeleconnectionsForDryad.R is an R script that imports raw data on four teleconnections (PNA, ENSO, NAO, AO) from cpc.ncep.noaa.gov and converts them into weekly data and exports a flat file csv.
 
-create_NLDAS_files_weekly_05deg.m is a Matlab script that imports netCDF data files from https://disc.gsfc.nasa.gov/datasets?keywords=NLDAS and rasterizes the variables to a weekly 0.5 degree grid.
+create_NLDAS_weekly_05deg.m is a Matlab script that imports netCDF data files from https://disc.gsfc.nasa.gov/datasets?keywords=NLDAS and aggregates the variables to a weekly 0.5 degree grid. See README_NLDAS.txt for more information on these variables.
 
 The variables related to streamflow were generated using the following scripts:
 
