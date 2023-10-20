@@ -6,7 +6,7 @@
 %
 % Author: Lauren Lowman
 % 
-% Interpolate NLDAS Data to 0.5 Degree Grid and create weekly averages for 
+% Aggregate NLDAS Data to 0.5 Degree Grid and create weekly averages for 
 % all of CONUS. The weekly averages begin on the first Tuesday of the year.
 % See README_NLDAS.txt file for more details on dataset created from this 
 % script.
