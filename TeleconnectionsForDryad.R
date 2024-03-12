@@ -15,8 +15,11 @@ enso <- read.fwf(
 enso <- enso[,c(1,7)]
 head(enso)
 str_sub(enso[,1], start=-6)
-enso <- enso[-c(1:957),] ## Remove dates before Year 2000
-enso <- enso[1:1174,]
+
+enso[947,] ## earliest date that we need
+enso <- enso[-c(1:946),] ## Remove dates before Oct 20, 1999
+enso[1185,]
+enso <- enso[1:1185,]
 head(enso)
 tail(enso)
 
@@ -40,10 +43,24 @@ mon[mon.txt=="OCT"] = "10"
 mon[mon.txt=="NOV"] = "11"
 mon[mon.txt=="DEC"] = "12"
 
-enso.wk = data.frame(year, mon, day, enso[,2])
-head(enso.wk)
-tail(enso.wk)
+enso.wk.pre = data.frame(year, mon, day, enso[,2])
+head(enso.wk.pre)
+tail(enso.wk.pre)
 ## Matches by one day (i.e. 1/5/2000 goes with 1/4/2000 in final dataset)
+
+dim(enso.wk.pre)
+enso.wk = enso.wk.pre[12:1185,]
+head(enso.wk)
+enso.14 = enso.wk[,4]
+enso.28 = enso.wk[,4]
+enso.84 = enso.wk[,4]
+for (t in 1:length(enso.14)){
+  enso.14[t] = mean(enso.wk.pre[((t+11)-1):(t+11),4])
+  enso.28[t] = mean(enso.wk.pre[((t+11)-3):(t+11),4])
+  enso.84[t] = mean(enso.wk.pre[((t+11)-11):(t+11),4])
+}
+enso.wk = cbind(enso.wk, enso.14, enso.28, enso.84)
+head(enso.wk)
 
 ## 3. PNA
 pna <- read.fwf(
@@ -102,14 +119,18 @@ ao.wk[,4] <- ao.avg
 head(pna.wk)
 time = pna.wk$day*1 + pna.wk$month*100 + pna.wk$year*10000
 tele <- data.frame(time, pna.wk$pna, nao.wk$nao, ao.wk$ao)
-enso.wk[1:dim(tele)[1],4]
-tele <- cbind(tele, enso.wk[1:dim(tele)[1],4])
-colnames(tele) <- c("time","pna","nao","ao","enso")
+enso.wk[1:dim(tele)[1],4:7]
+tele <- cbind(tele, enso.wk[1:dim(tele)[1],4:7])
+colnames(tele) <- c("time","pna","nao","ao","enso","enso14","enso28","enso84")
 
 tele$pna <- round(tele$pna, 2)
 tele$nao <- round(tele$nao, 2)
 tele$ao <- round(tele$ao, 2)
+tele$enso <- round(tele$enso, 2)
+tele$enso14 <- round(tele$enso14, 3)
+tele$enso28 <- round(tele$enso28, 3)
+tele$enso84 <- round(tele$enso84, 3)
 
 head(tele)
-write.csv(file="Teleconnections/tele2.csv", tele, row.names=FALSE)
+write.csv(file="Teleconnections/tele3.csv", tele, row.names=FALSE)
 
